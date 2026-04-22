@@ -6,8 +6,6 @@
 <title>ELI Survey Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root {
     --bts-charcoal: #24282b;
@@ -159,13 +157,19 @@
   .text-card h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--bts-charcoal); }
 
   /* WORD CLOUD */
-  .word-cloud { min-height: 120px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; }
-  .wc-word {
-    border-radius: 3px; padding: 3px 8px;
-    font-weight: 600; cursor: default; transition: transform 0.15s;
-    line-height: 1.4;
+  .word-cloud {
+    min-height: 160px; display: flex; flex-wrap: wrap;
+    gap: 4px 10px; align-items: center; justify-content: center;
+    padding: 12px 4px; line-height: 1.2;
   }
-  .wc-word:hover { transform: scale(1.1); }
+  .wc-word {
+    font-weight: 700; cursor: default;
+    transition: transform 0.15s, opacity 0.15s;
+    background: transparent !important;
+    padding: 2px 4px;
+    line-height: 1.1;
+  }
+  .wc-word:hover { transform: scale(1.08); opacity: 0.85; }
 
   /* THEMES */
   .theme-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -175,13 +179,74 @@
   .theme-bar { height: 6px; background: var(--bts-grey-light); border-radius: 3px; overflow: hidden; flex: 1; }
   .theme-bar-fill { height: 100%; border-radius: 3px; }
 
-  /* SURPRISE */
-  .surprise-box {
-    background: var(--bts-grey-light); border-radius: 8px; padding: 16px;
-    border-left: 4px solid var(--bts-blood-orange);
-    font-size: 13px; line-height: 1.7; color: var(--bts-charcoal);
+  /* CHATGPT EXPORT */
+  .chatgpt-export-card {
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    overflow: hidden;
+    border: 2px solid var(--bts-blood-orange);
   }
-  .surprise-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--bts-blood-orange); margin-bottom: 8px; }
+  .chatgpt-export-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 20px; padding: 20px 24px;
+    background: #fff3f0;
+    border-bottom: 1px solid #fdd;
+    flex-wrap: wrap;
+  }
+  .chatgpt-export-title { font-size: 15px; font-weight: 700; color: var(--bts-charcoal); margin-bottom: 4px; }
+  .chatgpt-export-sub { font-size: 12px; color: var(--bts-grey-mid); max-width: 560px; line-height: 1.5; }
+  .chatgpt-export-btns { display: flex; gap: 10px; flex-shrink: 0; align-items: center; flex-wrap: wrap; }
+  .btn-copy { background: var(--bts-charcoal); color: #fff; }
+  .btn-copy:hover { background: #3a3f43; }
+  .btn-copy.copied { background: var(--bts-emerald); }
+  .chatgpt-preview {
+    font-family: 'Courier New', monospace; font-size: 12px;
+    line-height: 1.6; color: #444;
+    padding: 20px 24px;
+    max-height: 320px; overflow-y: auto;
+    white-space: pre-wrap; word-break: break-word;
+    background: #fafafa;
+  }
+
+  /* SURPRISE (keep for potential future use, just hidden) */
+  .surprise-box { display: none; }
+
+  /* AI ANALYSIS PASTE PANEL */
+  .paste-card {
+    background: #fff; border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    overflow: hidden;
+    border: 2px solid var(--bts-emerald);
+  }
+  .paste-card-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 20px; padding: 20px 24px;
+    background: #f0faf9;
+    border-bottom: 1px solid #c5e8e6;
+    flex-wrap: wrap;
+  }
+  .paste-card-title { font-size: 15px; font-weight: 700; color: var(--bts-charcoal); margin-bottom: 4px; }
+  .paste-card-sub { font-size: 12px; color: var(--bts-grey-mid); max-width: 560px; line-height: 1.5; }
+  .paste-textarea {
+    width: 100%; min-height: 280px;
+    padding: 20px 24px;
+    font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px;
+    line-height: 1.7; color: var(--bts-charcoal);
+    border: none; outline: none; resize: vertical;
+    background: #fff;
+    box-sizing: border-box;
+  }
+  .paste-textarea::placeholder { color: var(--bts-grey-mid); }
+  .paste-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 24px; background: #f9fafb;
+    border-top: 1px solid var(--bts-grey-light);
+  }
+  .paste-char-count { font-size: 11px; color: var(--bts-grey-mid); }
+  .btn-clear { background: transparent; color: var(--bts-grey-mid); border: 1px solid var(--bts-grey-mid); font-size: 12px; padding: 5px 12px; }
+  .btn-clear:hover { color: var(--bts-blood-orange); border-color: var(--bts-blood-orange); }
+
+
 
   /* LOADING */
   #loading {
@@ -203,6 +268,10 @@
   .donut-legend { flex: 1; padding-top: 4px; }
   .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; }
   .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  /* center donut card */
+  #impact-donut-card {
+    display: flex; align-items: center; justify-content: center;
+  }
 
   @media print {
     body { background: #fff; }
@@ -230,7 +299,7 @@
   <div class="header-right">
     <label for="file-input" class="btn btn-outline" style="cursor:pointer;">↑ Upload New Data</label>
     <input type="file" id="file-input" accept=".xlsx,.xls">
-    <button class="btn btn-pdf" onclick="downloadPDF()">⬇ Download PDF Report</button>
+    <button class="btn btn-pdf" onclick="downloadChatGPTPrompt()">⬇ Download ChatGPT Prompt</button>
   </div>
 </div>
 
@@ -287,7 +356,7 @@
     <div class="section-title"><span class="dot blue"></span>Q2 — Biggest Impact Area</div>
     <div class="impact-grid">
       <div class="impact-card" id="impact-bars"></div>
-      <div class="impact-card">
+      <div class="impact-card" id="impact-donut-card">
         <canvas id="impact-donut" width="220" height="220"></canvas>
       </div>
     </div>
@@ -304,12 +373,6 @@
       <div class="text-card">
         <h3>Top 10 Themes</h3>
         <div id="themes-q3"></div>
-      </div>
-    </div>
-    <div class="text-card" style="margin-top:16px;">
-      <div class="surprise-box">
-        <h4>🔍 Analyst Observations — Q3</h4>
-        <div id="surprise-q3"></div>
       </div>
     </div>
   </div>
@@ -337,12 +400,6 @@
         <div id="themes-q4s"></div>
       </div>
     </div>
-    <div class="text-card" style="margin-top:16px;">
-      <div class="surprise-box">
-        <h4>🔍 Analyst Observations — Q4</h4>
-        <div id="surprise-q4"></div>
-      </div>
-    </div>
   </div>
 
   <!-- Q5 TEXT ANALYSIS -->
@@ -358,10 +415,48 @@
         <div id="themes-q5"></div>
       </div>
     </div>
-    <div class="text-card" style="margin-top:16px;">
-      <div class="surprise-box">
-        <h4>🔍 Analyst Observations — Q5</h4>
-        <div id="surprise-q5"></div>
+  </div>
+
+  <!-- CHATGPT EXPORT PANEL -->
+  <div class="section" id="chatgpt-section">
+    <div class="section-title"><span class="dot" style="background:var(--bts-blood-orange)"></span>AI Analysis — Export to ChatGPT</div>
+    <div class="chatgpt-export-card">
+      <div class="chatgpt-export-header">
+        <div>
+          <div class="chatgpt-export-title">Ready-to-use ChatGPT prompt</div>
+          <div class="chatgpt-export-sub">All survey responses are pre-loaded. Copy the text below and paste it directly into ChatGPT to get analyst-quality observations for Q3, Q4, and Q5.</div>
+        </div>
+        <div class="chatgpt-export-btns">
+          <button class="btn btn-copy" onclick="copyPrompt()">⎘ Copy to clipboard</button>
+          <button class="btn btn-pdf" onclick="downloadChatGPTPrompt()">⬇ Download .txt file</button>
+        </div>
+      </div>
+      <div class="chatgpt-preview" id="chatgpt-preview">Upload a data file to generate the prompt.</div>
+    </div>
+  </div>
+
+  <!-- AI ANALYSIS PASTE-IN PANEL -->
+  <div class="section" id="analysis-paste-section">
+    <div class="section-title"><span class="dot" style="background:var(--bts-emerald)"></span>AI Analysis — Paste Results Here</div>
+    <div class="paste-card">
+      <div class="paste-card-header">
+        <div>
+          <div class="paste-card-title">Paste your ChatGPT output below</div>
+          <div class="paste-card-sub">Once you have your analysis from ChatGPT, paste it here. It will be included at the bottom of your PDF report.</div>
+        </div>
+        <div class="chatgpt-export-btns">
+          <button class="btn btn-pdf" id="pdf-btn" onclick="downloadPDF()">⬇ Download PDF Report</button>
+        </div>
+      </div>
+      <textarea
+        id="analysis-paste"
+        class="paste-textarea"
+        placeholder="Paste your ChatGPT analysis here…&#10;&#10;Example:&#10;Q3 OBSERVATIONS&#10;• AI fluency is the dominant skill gap — nearly half of respondents mentioned AI in some form…&#10;&#10;Q4 OBSERVATIONS&#10;• …&#10;&#10;Q5 OBSERVATIONS&#10;• …"
+        oninput="onPasteInput()"
+      ></textarea>
+      <div class="paste-footer">
+        <span id="paste-char-count" class="paste-char-count">0 characters</span>
+        <button class="btn btn-clear" onclick="clearPaste()">✕ Clear</button>
       </div>
     </div>
   </div>
@@ -383,8 +478,23 @@ document.getElementById('file-input').addEventListener('change', function(e) {
       try {
         const wb = XLSX.read(evt.target.result, { type: 'binary' });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-        processData(rows);
+
+        // Use header:1 to get raw arrays including blank rows, then convert manually
+        // This prevents sheet_to_json from silently skipping blank/partial rows
+        const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+        if (raw.length < 2) { alert('No data found in file.'); document.getElementById('loading').style.display = 'none'; return; }
+
+        const headers = raw[0];
+        // Include ALL data rows — even if mostly blank (partial responses)
+        const rows = raw.slice(1)
+          .filter(r => r.some(cell => cell !== '' && cell !== null && cell !== undefined))
+          .map(r => {
+            const obj = {};
+            headers.forEach((h, i) => { obj[h] = r[i] !== undefined ? r[i] : ''; });
+            return obj;
+          });
+
+        processData(rows, raw.slice(1).length);
       } catch(err) {
         alert('Error reading file: ' + err.message);
         document.getElementById('loading').style.display = 'none';
@@ -392,6 +502,7 @@ document.getElementById('file-input').addEventListener('change', function(e) {
     }, 200);
   };
   reader.readAsBinaryString(file);
+  this.value = '';
 });
 
 // ─── COLUMN MAPPING ────────────────────────────────────────────────────────────
@@ -400,7 +511,7 @@ function findCol(row, keywords) {
 }
 
 // ─── MAIN PROCESS ─────────────────────────────────────────────────────────────
-function processData(rows) {
+function processData(rows, rawRowCount) {
   // Detect columns
   const sample = rows[0] || {};
   const colAI  = findCol(sample, ['AI Leadership', '1. AI']);
@@ -414,7 +525,7 @@ function processData(rows) {
   const colStatus = findCol(sample, ['Response Status', 'status']);
 
   const total = rows.length;
-  const complete = rows.filter(r => (r[colStatus]||'').toLowerCase().includes('complete')).length;
+  const complete = rows.filter(r => (r[colStatus]||'').toLowerCase().includes('complete') && !(r[colStatus]||'').toLowerCase().includes('incomplete')).length;
   const partial  = total - complete;
 
   // Q1 Counts
@@ -476,7 +587,10 @@ function processData(rows) {
 
   // Render
   document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-complete').textContent = `${complete} complete · ${partial} partial`;
+  const skipped = (rawRowCount || total) - total;
+  document.getElementById('stat-complete').textContent =
+    `${complete} complete · ${partial} partial` +
+    (skipped > 0 ? ` · ${skipped} blank/skipped` : '');
   document.getElementById('stat-ai').textContent = aiRespondents;
   document.getElementById('stat-ai-pct').textContent = pct(aiRespondents, total) + '% selected at least one session';
   document.getElementById('stat-rs').textContent = rsRespondents;
@@ -499,15 +613,22 @@ function processData(rows) {
     '#1c4c87','#6cbee5','#ca1c68','#ea5f84','#1d7279','#0db4ab','#4c3480','#826daa','#e63f50','#a2a5a8'
   ]);
 
-  renderSurprises(q3Texts, q4eTexts, q4sTexts, q5Texts);
-
   document.getElementById('upload-zone').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('loading').style.display = 'none';
+
+  // Build the ChatGPT prompt with all response text
+  updateChatGPTPreview(q3Texts, q4eTexts, q4sTexts, q5Texts, total);
 }
 
 function isJunk(s) {
-  return s.length < 5 || /^[a-z]{3,6}$/.test(s.toLowerCase().replace(/\s/g,'')) && s.length < 8;
+  // Only discard truly meaningless entries: very short, or obvious test/placeholder text
+  if (s.length < 3) return true;
+  const lower = s.toLowerCase().trim();
+  // Discard single repeated characters or obvious placeholders
+  if (/^(.)\1+$/.test(lower)) return true;
+  if (/^(n\/a|na|tbd|none|test|asdf|sdfg|ssdf|sadff|ssfad|ssdfa|no|yes|ok|idk)$/.test(lower)) return true;
+  return false;
 }
 
 function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
@@ -577,9 +698,10 @@ function renderImpact(counts, total) {
   });
   document.getElementById('impact-bars').innerHTML = html;
 
-  // Donut
+  // Donut — clear first so re-uploads don't layer on old data
   const canvas = document.getElementById('impact-donut');
   const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   const cx = 110, cy = 110, r = 90, ir = 55;
   let angle = -Math.PI / 2;
   const totalVotes = sorted.reduce((s,[,c]) => s+c, 0);
@@ -694,10 +816,16 @@ function renderTextAnalysis(id, texts, totalRespondents, colors) {
   const wcEl = document.getElementById('wc-' + id);
   if (wcEl) {
     const maxF = freq[0]?.[1] || 1;
-    wcEl.innerHTML = freq.slice(0, 28).map(([word, count], i) => {
-      const size = 11 + Math.round((count / maxF) * 18);
-      const color = colors[i % colors.length];
-      return `<span class="wc-word" style="font-size:${size}px; color:${color}; background:${color}18">${word}</span>`;
+    const wcColors = [
+      '#ca1c68','#4c3480','#1d7279','#1c4c87','#e63f50',
+      '#ea5f84','#826daa','#0db4ab','#6cbee5','#ca1c68',
+      '#4c3480','#1d7279','#1c4c87','#e63f50','#826daa',
+    ];
+    wcEl.innerHTML = freq.slice(0, 30).map(([word, count], i) => {
+      const ratio = count / maxF;
+      const size = Math.round(13 + ratio * 31);
+      const color = wcColors[i % wcColors.length];
+      return `<span class="wc-word" style="font-size:${size}px; color:${color}">${word}</span>`;
     }).join('');
   }
 
@@ -719,124 +847,224 @@ function renderTextAnalysis(id, texts, totalRespondents, colors) {
   }
 }
 
-// ─── ANALYST SURPRISES ────────────────────────────────────────────────────────
-function renderSurprises(q3, q4e, q4s, q5) {
-  document.getElementById('surprise-q3').innerHTML = analyzeQ3(q3);
-  document.getElementById('surprise-q4').innerHTML = analyzeQ4(q4e, q4s);
-  document.getElementById('surprise-q5').innerHTML = analyzeQ5(q5);
+// ─── CHATGPT PROMPT GENERATOR ─────────────────────────────────────────────────
+
+let _generatedPrompt = '';
+
+function buildChatGPTPrompt(q3, q4e, q4s, q5, totalRows) {
+  const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  return `=======================================================
+ELI SURVEY — AI ANALYST PROMPT
+BTS Enablement Learning Initiative · Generated ${date}
+${totalRows} total survey responses
+=======================================================
+
+YOU ARE: A sharp, empathetic learning & development analyst at BTS, a global strategy execution consultancy. You are analyzing open-text survey responses from BTS internal employees for the Enablement Learning Initiative (ELI) — a program to determine what learning sessions to offer this year across three tracks: AI Leadership, Run Simple (process efficiency), and Talent Growth.
+
+YOUR TASK: Read ALL of the responses below carefully and produce three sections of analyst observations — one for each question (Q3, Q4, Q5). For each section:
+  • Write 5–7 concise, data-driven bullet observations
+  • Ground each observation in the ACTUAL response text — cite specific patterns, quote fragments, or counts
+  • Surface what is unexpected, notable, or actionable — not just the most common theme
+  • Reference proportions when useful (e.g. "roughly a third", "8 of ${q3.length}")
+  • Bold the key insight phrase at the start of each bullet
+  • Be direct and specific — avoid generic L&D platitudes
+  • End with a 2–3 sentence "So what?" synthesis per section: what does this mean for ELI program design?
+
+=======================================================
+SECTION 1 — Q3 RESPONSES (${q3.length} of ${totalRows} responded)
+Question: "What skills, capabilities, or topics would you most like to improve right now?"
+=======================================================
+${q3.map((t, i) => `[${i+1}] ${t}`).join('\n')}
+
+
+=======================================================
+SECTION 2 — Q4 RESPONSES (${Math.max(q4e.length, q4s.length)} of ${totalRows} responded)
+Question: "What is one thing that ENERGIZES you at work? And one thing that SLOWS YOU DOWN?"
+=======================================================
+
+--- ENERGIZERS (${q4e.length} responses) ---
+${q4e.map((t, i) => `[${i+1}] ${t}`).join('\n')}
+
+--- SLOWDOWNS (${q4s.length} responses) ---
+${q4s.map((t, i) => `[${i+1}] ${t}`).join('\n')}
+
+
+=======================================================
+SECTION 3 — Q5 RESPONSES (${q5.length} of ${totalRows} responded)
+Question: "What helps you learn something new most effectively? (length, style, format, etc.)"
+=======================================================
+${q5.map((t, i) => `[${i+1}] ${t}`).join('\n')}
+
+
+=======================================================
+REMINDER: Write observations for all three sections. Each section should have 5–7 bullets + a "So what?" synthesis. Ground everything in the actual responses above.
+=======================================================`;
 }
 
-function analyzeQ3(texts) {
-  const aiPressure = texts.filter(t => /pressure|replac|training.*replac|AI expert|not using|feel.*not/i.test(t)).length;
-  const agentBuild = texts.filter(t => /agent|bot|build.*ai|ai.*bot|autonomous/i.test(t)).length;
-  const influence = texts.filter(t => /influenc.*authority|authority|without authority/i.test(t)).length;
-  const leadership = texts.filter(t => /leadership|executive presence|strategic.*partner|thought partner/i.test(t)).length;
-  const changeCombo = texts.filter(t => /change|navigat|uncertain/i.test(t) && /leadership|influenc|lead/i.test(t)).length;
-  const coachAsked = texts.filter(t => /coach|mentor|1.1|1-1|individual/i.test(t)).length;
-
-  let insights = [];
-  if (agentBuild > 0) insights.push(`<b>${agentBuild} respondent(s)</b> specifically asked to learn how to build AI agents or bots — this goes well beyond "AI basics" and signals a more technically curious subset ready for advanced tracks.`);
-  if (aiPressure > 0) insights.push(`<b>${aiPressure} respondent(s)</b> expressed anxiety about AI (feeling behind, pressure to be an "expert," or fear of replacement) — this is a wellbeing signal, not just a skills gap, and may warrant a psychological safety framing in AI learning sessions.`);
-  if (influence > 0) insights.push(`<b>${influence} respondent(s)</b> specifically cited "influencing without authority" — a recurring gap on cross-functional, matrixed teams that often goes unaddressed in formal learning programs.`);
-  if (leadership > 0) insights.push(`<b>${leadership} respondent(s)</b> want to shift from task-doer to strategic thought partner — this is a role identity challenge, not just a skills one, and may benefit from coaching alongside learning.`);
-  if (changeCombo > 0) insights.push(`The combination of "change navigation" + "leadership growth" appeared together frequently — suggesting people want to lead through change, not just survive it.`);
-  if (coachAsked > 0) insights.push(`<b>${coachAsked} respondent(s)</b> referenced individual coaching or mentoring preferences — the Wellness Coach offering may be under-promoted.`);
-  if (insights.length === 0) insights.push('Responses show a strong cluster around AI fluency and process improvement with no single outlier pattern.');
-  return insights.map(s => `<p style="margin-bottom:10px">• ${s}</p>`).join('');
+function updateChatGPTPreview(q3, q4e, q4s, q5, totalRows) {
+  _generatedPrompt = buildChatGPTPrompt(q3, q4e, q4s, q5, totalRows);
+  const preview = document.getElementById('chatgpt-preview');
+  if (preview) preview.textContent = _generatedPrompt;
 }
 
-function analyzeQ4(q4e, q4s) {
-  const aiEnergized = q4e.filter(t => /ai|artificial|innovat|build|creat|possibilit/i.test(t)).length;
-  const connectionE = q4e.filter(t => /connect|people|team|colleague|client|human/i.test(t)).length;
-  const pto = q4e.filter(t => /pto|vacation|time off|holiday|off/i.test(t)).length;
-  const pressureS = q4s.filter(t => /pressure|replac|training|AI expert|sneaking|behind|not doing job/i.test(t)).length;
-  const unsupportedS = q4s.filter(t => /support|seen|value|appreciat|invest|heard|recogniz/i.test(t)).length;
-  const processS = q4s.filter(t => /process|last.minute|unclear|communic.*gap|not included|after.*decision/i.test(t)).length;
-
-  let insights = [];
-  if (aiEnergized > 0 && pressureS > 0) insights.push(`<b>Striking tension:</b> ${aiEnergized} people list AI as their energizer, while ${pressureS} cite AI pressure as a slowdown. The same topic is both motivating and stressful — suggesting confidence and support levels, not the technology itself, determine the experience.`);
-  if (connectionE > 0) insights.push(`<b>${connectionE} respondent(s)</b> cited people, collaboration, or human connection as their primary energizer — reinforcing that in-person or video-based learning will land better than async-only formats.`);
-  if (pto > 0) insights.push(`<b>Unexpected response:</b> At least ${pto} respondent(s) listed "PTO" or "vacation" as what energizes them. While possibly lighthearted, it may be a quiet signal of burnout worth monitoring.`);
-  if (unsupportedS > 0) insights.push(`<b>${unsupportedS} respondent(s)</b> described feeling unseen, undervalued, or not invested in — a morale signal that transcends learning program design and warrants leadership attention.`);
-  if (processS > 0) insights.push(`<b>${processS} respondent(s)</b> described being brought in late to decisions or working without clear processes — "Run Simple" sessions directly address this frustration and may have high pull.`);
-  if (insights.length === 0) insights.push('The energizer/slowdown data shows a healthy range of responses with no single dominant outlier pattern.');
-  return insights.map(s => `<p style="margin-bottom:10px">• ${s}</p>`).join('');
+function copyPrompt() {
+  if (!_generatedPrompt) return;
+  navigator.clipboard.writeText(_generatedPrompt).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy to clipboard'; btn.classList.remove('copied'); }, 2500);
+  }).catch(() => {
+    // Fallback for browsers that block clipboard
+    const ta = document.createElement('textarea');
+    ta.value = _generatedPrompt;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '⎘ Copy to clipboard'; btn.classList.remove('copied'); }, 2500);
+  });
 }
 
-function analyzeQ5(texts) {
-  const short = texts.filter(t => /30|45|minute|short|quick|brief|micro|burst/i.test(t)).length;
-  const longW = texts.filter(t => /90|120|two hour|half day|full day|longer/i.test(t)).length;
-  const noLecture = texts.filter(t => /not.*lecture|lecture.*not|lecture.*great|hate.*lecture|lecture.*bad/i.test(t)).length;
-  const reference = texts.filter(t => /pdf|guide|resource|template|reference|take.away|recording|replay/i.test(t)).length;
-  const psychSafe = texts.filter(t => /psycholog|safe|safety|comfortable|trust|judgment|err/i.test(t)).length;
-  const smallGroup = texts.filter(t => /small group|small team|similar role|role.specific|same role/i.test(t)).length;
+function downloadChatGPTPrompt() {
+  if (!_generatedPrompt) return;
+  const blob = new Blob([_generatedPrompt], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ELI_Survey_ChatGPT_Prompt_${new Date().toISOString().slice(0,10)}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
-  let insights = [];
-  if (short > 0 && longW > 0) insights.push(`<b>Preference split:</b> ${short} people prefer short sessions (30–45 min), while ${longW} want longer, deeper workshops (90–120 min) — a modular format with optional deep-dives may satisfy both.`);
-  else if (short > 0) insights.push(`<b>${short} respondent(s)</b> explicitly prefer sessions under 60 minutes — micro-learning or tiered formats are likely to see higher completion rates.`);
-  if (reference > 0) insights.push(`<b>${reference} respondent(s)</b> asked for leave-behind resources (guides, PDFs, recordings) — live sessions alone will not be enough for retention; post-session materials are expected.`);
-  if (psychSafe > 0) insights.push(`<b>${psychSafe} respondent(s)</b> mentioned psychological safety as a prerequisite for effective learning — a signal that early sessions should explicitly establish safe-to-fail environments.`);
-  if (smallGroup > 0) insights.push(`<b>${smallGroup} respondent(s)</b> specifically requested breakout rooms or sessions with peers in similar roles — random groupings may reduce perceived value.`);
-  if (noLecture > 0) insights.push(`<b>${noLecture} respondent(s)</b> explicitly stated they don't learn from lecture-only formats — pure presentations will likely underperform with this audience.`);
-  if (insights.length === 0) insights.push('Learning style preferences converge on hands-on, practical, and applied formats with no significant outlier preferences.');
-  return insights.map(s => `<p style="margin-bottom:10px">• ${s}</p>`).join('');
+// ─── PASTE PANEL HELPERS ──────────────────────────────────────────────────────
+function onPasteInput() {
+  const ta = document.getElementById('analysis-paste');
+  const count = ta.value.length;
+  document.getElementById('paste-char-count').textContent =
+    count > 0 ? `${count.toLocaleString()} characters` : '0 characters';
+}
+
+function clearPaste() {
+  document.getElementById('analysis-paste').value = '';
+  document.getElementById('paste-char-count').textContent = '0 characters';
 }
 
 // ─── PDF EXPORT ───────────────────────────────────────────────────────────────
 async function downloadPDF() {
-  const btn = document.querySelector('.btn-pdf');
+  const analysisText = (document.getElementById('analysis-paste')?.value || '').trim();
+  const btn = document.getElementById('pdf-btn');
   btn.textContent = '⏳ Generating…';
   btn.disabled = true;
+
+  // Dynamically load jsPDF + html2canvas if not already present
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = 210, pageH = 297, margin = 14;
 
-  const sections = [
-    document.querySelector('.stats-row'),
-    ...document.querySelectorAll('.section'),
-  ];
-
-  let y = 20;
-
-  // Title page header
+  // Header bar on page 1
   pdf.setFillColor(36, 40, 43);
   pdf.rect(0, 0, pageW, 22, 'F');
-  pdf.setTextColor(255,255,255);
+  pdf.setTextColor(255, 255, 255);
   pdf.setFontSize(13);
   pdf.setFont(undefined, 'bold');
   pdf.text('Enablement Learning Initiative — Survey Results Dashboard', margin, 14);
   pdf.setFontSize(9);
   pdf.setFont(undefined, 'normal');
-  pdf.text('April 2026  ·  Confidential', pageW - margin, 14, { align: 'right' });
+  pdf.text(new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '  ·  Confidential', pageW - margin, 14, { align: 'right' });
 
-  y = 30;
+  let y = 30;
+
+  // Capture each dashboard section as image
+  const sections = [
+    document.querySelector('.stats-row'),
+    ...document.querySelectorAll('.section:not(#chatgpt-section):not(#analysis-paste-section)'),
+  ];
 
   for (let i = 0; i < sections.length; i++) {
-    if (y > pageH - 30 && i > 0) { pdf.addPage(); y = 20; }
     try {
-      const canvas = await html2canvas(sections[i], { scale: 1.5, useCORS: true, backgroundColor: '#ffffff' });
+      const canvas = await html2canvas(sections[i], { scale: 1.5, useCORS: true, backgroundColor: '#f5f6f8' });
       const imgData = canvas.toDataURL('image/png');
       const imgW = pageW - margin * 2;
       const imgH = (canvas.height * imgW) / canvas.width;
       if (y + imgH > pageH - 16) { pdf.addPage(); y = 20; }
       pdf.addImage(imgData, 'PNG', margin, y, imgW, imgH);
       y += imgH + 8;
-    } catch(e) { console.warn('Section export error', e); }
+    } catch(e) { console.warn('Section capture error:', e); }
   }
 
-  // Footer
+  // AI Analysis section — render as formatted text if content present
+  if (analysisText) {
+    pdf.addPage();
+    y = 20;
+
+    // Section header bar
+    pdf.setFillColor(29, 114, 121); // BTS emerald
+    pdf.rect(0, y - 6, pageW, 14, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(11);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('AI Analysis — Observations (Q3, Q4, Q5)', margin, y + 3);
+    y += 16;
+
+    // Render analysis text
+    pdf.setTextColor(36, 40, 43);
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, 'normal');
+    const lineWidth = pageW - margin * 2;
+    const lines = pdf.splitTextToSize(analysisText, lineWidth);
+
+    for (let i = 0; i < lines.length; i++) {
+      if (y > pageH - 16) { pdf.addPage(); y = 20; }
+      const line = lines[i];
+      // Style bullet points and section headers
+      if (/^[•\-]/.test(line.trim())) {
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(36, 40, 43);
+      } else if (/^Q[345]|^SECTION|^SO WHAT/i.test(line.trim())) {
+        pdf.setFont(undefined, 'bold');
+        pdf.setTextColor(29, 114, 121);
+      } else {
+        pdf.setFont(undefined, 'normal');
+        pdf.setTextColor(36, 40, 43);
+      }
+      pdf.text(line, margin, y);
+      y += 5.5;
+    }
+  }
+
+  // Footer on every page
   const pageCount = pdf.internal.getNumberOfPages();
   for (let p = 1; p <= pageCount; p++) {
     pdf.setPage(p);
     pdf.setFontSize(8);
-    pdf.setTextColor(162,165,168);
-    pdf.text(`Copyright © 2026 BTS  ·  Page ${p} of ${pageCount}`, pageW / 2, pageH - 6, { align: 'center' });
+    pdf.setFont(undefined, 'normal');
+    pdf.setTextColor(162, 165, 168);
+    pdf.text(`Copyright © ${new Date().getFullYear()} BTS  ·  Page ${p} of ${pageCount}`, pageW / 2, pageH - 6, { align: 'center' });
   }
 
-  pdf.save('ELI_Survey_Dashboard_2026.pdf');
+  pdf.save(`ELI_Survey_Report_${new Date().toISOString().slice(0,10)}.pdf`);
   btn.textContent = '⬇ Download PDF Report';
   btn.disabled = false;
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src; s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
+  });
 }
 </script>
 </body>
